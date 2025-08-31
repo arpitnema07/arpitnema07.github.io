@@ -4,92 +4,2149 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Custom Utility Applications</title>
+    <title>AI Data Dashboard</title>
     <style>
+        /* Reset and Base Styles */
         * {
+            margin: 0;
+            padding: 0;
             box-sizing: border-box;
         }
 
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 2rem;
-            background: #f5f5f5;
+        :root {
+            --primary-color: #2563eb;
+            --primary-hover: #1d4ed8;
+            --secondary-color: #64748b;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --error-color: #ef4444;
+            --background: #f8fafc;
+            --surface: #ffffff;
+            --surface-hover: #f1f5f9;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --text-muted: #94a3b8;
+            --border: #e2e8f0;
+            --border-hover: #cbd5e1;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --radius: 8px;
+            --radius-lg: 12px;
+            --sidebar-width: 320px;
+            --header-height: 64px;
         }
 
-        h1 {
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--background);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        /* Header */
+        .header {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            height: var(--header-height);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .header .container {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .logo i {
+            font-size: 1.5rem;
+        }
+
+        .logo h1 {
+            font-size: 1.25rem;
+            margin: 0;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        /* Main Layout */
+        .main {
+            display: flex;
+            margin-top: var(--header-height);
+            min-height: calc(100vh - var(--header-height));
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            overflow-y: auto;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-content {
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .sidebar h3 {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        /* Upload Section */
+        .upload-area {
+            border: 2px dashed var(--border);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
             text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .upload-area:hover,
+        .upload-area.dragover {
+            border-color: var(--primary-color);
+            background-color: var(--primary-color);
+            background-opacity: 0.05;
+        }
+
+        .upload-content i {
+            font-size: 2rem;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+        }
+
+        .upload-content p {
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-content span {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            display: block;
+            margin: 0.5rem 0;
+        }
+
+        .file-info {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: var(--surface-hover);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+        }
+
+        .file-details {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .file-details i {
+            color: var(--success-color);
+            font-size: 1.25rem;
+        }
+
+        .file-details span {
+            flex: 1;
+            font-weight: 500;
+        }
+
+        /* Column Selection */
+        .column-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-bottom: 1rem;
+        }
+
+        .column-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            background: var(--surface-hover);
+            border-radius: var(--radius);
+            transition: background-color 0.2s ease;
+        }
+
+        .column-item:hover {
+            background: var(--border);
+        }
+
+        .column-item input[type="checkbox"] {
+            width: 1rem;
+            height: 1rem;
+            accent-color: var(--primary-color);
+        }
+
+        .column-item label {
+            flex: 1;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .column-type {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            background: var(--border);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+        }
+
+        /* Custom Prompt Section */
+        .custom-prompt-section {
+            margin-top: 1rem;
+        }
+
+        .prompt-content {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .prompt-content textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 0.875rem;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 100px;
+            background: var(--surface);
+            color: var(--text-primary);
+            transition: border-color 0.2s ease;
+        }
+
+        .prompt-content textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .prompt-content textarea::placeholder {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        /* Dashboard */
+        .dashboard {
+            flex: 1;
+            padding: 1.5rem;
+            overflow-y: auto;
+        }
+
+        .dashboard-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .dashboard-header h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .dashboard-actions {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .sidebar-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: var(--radius);
+            transition: background-color 0.2s ease;
+        }
+
+        .sidebar-toggle:hover {
+            background: var(--surface-hover);
+        }
+
+        /* Welcome State */
+        .welcome-state {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 400px;
+            text-align: center;
+        }
+
+        .welcome-content {
+            max-width: 500px;
+        }
+
+        .welcome-content i {
+            font-size: 4rem;
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+        }
+
+        .welcome-content h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .welcome-content p {
+            color: var(--text-secondary);
             margin-bottom: 2rem;
         }
 
-        .grid {
+        .features {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .feature {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .feature i {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+        }
+
+        .feature span {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        /* Charts Grid */
+        .charts-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
             gap: 1.5rem;
-            max-width: 1000px;
-            margin: 0 auto;
         }
 
-        .card {
-            background: #fff;
-            border-radius: 12px;
+        .chart-card {
+            background: var(--surface);
+            border-radius: var(--radius-lg);
             padding: 1.5rem;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border);
+        }
+
+        .chart-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .chart-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+
+        .chart-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .chart-actions .btn-icon {
+            font-size: 1rem;
+            padding: 0.4rem;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+
+        /* Loading State */
+        .loading-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 400px;
+            gap: 1rem;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--border);
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Buttons */
+        .btn-primary,
+        .btn-secondary,
+        .btn-icon,
+        .btn-small,
+        .btn-remove {
+            border: none;
+            border-radius: var(--radius);
+            font-weight: 500;
             cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
             text-decoration: none;
-            color: inherit;
         }
 
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+            padding: 0.75rem 1.5rem;
         }
 
-        .card h3 {
-            margin-top: 0;
-            color: #333;
+        .btn-primary:hover:not(:disabled) {
+            background: var(--primary-hover);
         }
 
-        .card p {
-            color: #555;
-            font-size: 0.95rem;
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
+
+        .btn-secondary {
+            background: var(--surface);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+            padding: 0.75rem 1.5rem;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: var(--surface-hover);
+            border-color: var(--border-hover);
+        }
+
+        .btn-icon {
+            background: none;
+            color: var(--text-secondary);
+            padding: 0.5rem;
+            font-size: 1.125rem;
+        }
+
+        .btn-icon:hover {
+            background: var(--surface-hover);
+            color: var(--text-primary);
+        }
+
+        .btn-small {
+            background: var(--primary-color);
+            color: white;
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+        }
+
+        .btn-small:hover {
+            background: var(--primary-hover);
+        }
+
+        .btn-remove {
+            background: var(--error-color);
+            color: white;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+        }
+
+        .btn-remove:hover {
+            background: #dc2626;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--surface);
+            border-radius: var(--radius-lg);
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .full-screen-modal-content {
+            max-width: 95vw;
+            width: 95vw;
+            height: 95vh;
+            max-height: 95vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .full-screen-modal-body {
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+        }
+
+        .full-screen-modal-body canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .modal-header h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 0.25rem;
+            border-radius: var(--radius);
+        }
+
+        .modal-close:hover {
+            background: var(--surface-hover);
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+            padding: 1.5rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .setting-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .setting-group label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .setting-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 0.875rem;
+        }
+
+        .setting-group input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .setting-group small {
+            display: block;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            margin-top: 0.25rem;
+        }
+
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 3000;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .toast {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1rem;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            min-width: 300px;
+            animation: slideIn 0.3s ease;
+        }
+
+        .toast.success {
+            border-left: 4px solid var(--success-color);
+        }
+
+        .toast.error {
+            border-left: 4px solid var(--error-color);
+        }
+
+        .toast.warning {
+            border-left: 4px solid var(--warning-color);
+        }
+
+        .toast-icon {
+            font-size: 1.25rem;
+        }
+
+        .toast.success .toast-icon {
+            color: var(--success-color);
+        }
+
+        .toast.error .toast-icon {
+            color: var(--error-color);
+        }
+
+        .toast.warning .toast-icon {
+            color: var(--warning-color);
+        }
+
+        .toast-content {
+            flex: 1;
+        }
+
+        .toast-title {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .toast-message {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                top: var(--header-height);
+                left: 0;
+                height: calc(100vh - var(--header-height));
+                z-index: 1500;
+                transform: translateX(-100%);
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .sidebar-toggle {
+                display: block;
+            }
+
+            .dashboard {
+                width: 100%;
+            }
+
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .chart-card {
+                margin: 0;
+            }
+
+            .features {
+                gap: 1rem;
+            }
+
+            .modal-content {
+                margin: 1rem;
+                width: calc(100% - 2rem);
+            }
+
+            .toast {
+                min-width: 280px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .sidebar-content {
+                padding: 1rem;
+            }
+
+            .dashboard {
+                padding: 1rem;
+            }
+
+            .upload-area {
+                padding: 1.5rem;
+            }
+
+            .upload-content i {
+                font-size: 1.5rem;
+            }
+
+            .welcome-content i {
+                font-size: 3rem;
+            }
+
+            .features {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--background);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--border-hover);
+        }
+
+        /* Focus Styles */
+        button:focus-visible,
+        input:focus-visible {
+            outline: 2px solid var(--primary-color);
+            outline-offset: 2px;
+        }
+
+        /* Animation Classes */
+        .fade-in {
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .slide-up {
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
     </style>
+    <!-- External Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script
+        src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 
 <body>
-    <h1>Custom Utility Applications</h1>
-    <div class="grid">
-        <a class="card" href="/roadmap">
-            <h3>AI Learning Roadmap</h3>
-            <p>Discover learning paths with structured roadmaps generated by LLM.</p>
-        </a>
-        <a class="card" href="/canvas">
-            <h3>AI Canvas</h3>
-            <p>Create Simple Websites using AI</p>
-        </a>
-        <a class="card" href="/project">
-            <h3>Project Manager</h3>
-            <p>Manage and monitor your personal or team projects.</p>
-        </a>
-        <a class="card" href="/retrieval">
-            <h3>Information Retrieval</h3>
-            <p>Explore document search and retrieval from your knowledge base.</p>
-        </a>
-        <a class="card" href="/habit">
-            <h3>Habit Tracker</h3>
-            <p>Track and build your daily habits effectively.</p>
-        </a>
-        <a class="card" href="/mood">
-            <h3>Mood Logger</h3>
-            <p>Log your mood and track patterns over time for emotional awareness.</p>
-        </a>
-        <a class="card" href="/convert-doc-format">
-            <h3>Document Converter</h3>
-            <p>Convert documents between formats with ease and speed.</p>
-        </a>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <i class="fas fa-chart-line"></i>
+                <h1>Data Dashboard AI</h1>
+            </div>
+            <div class="header-actions">
+                <button id="settingsBtn" class="btn-icon">
+                    <i class="fas fa-cog"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-content">
+                <!-- File Upload Section -->
+                <div class="upload-section" data-aos="fade-right">
+                    <h3><i class="fas fa-upload"></i> Upload Data</h3>
+                    <div class="upload-area" id="uploadArea">
+                        <div class="upload-content">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p>Drag & drop your Excel/CSV file here</p>
+                            <span>or</span>
+                            <button class="btn-primary">
+                                Choose File
+                            </button>
+                            <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" hidden>
+                        </div>
+                    </div>
+                    <div class="file-info" id="fileInfo" style="display: none;">
+                        <div class="file-details">
+                            <i class="fas fa-file-excel"></i>
+                            <span id="fileName"></span>
+                            <button class="btn-remove" id="removeFile">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Column Selection -->
+                <div class="column-section" id="columnSection" style="display: none;" data-aos="fade-right"
+                    data-aos-delay="100">
+                    <h3><i class="fas fa-columns"></i>Columns</h3>
+                    <div class="column-list" id="columnList"></div>
+                </div>
+
+                <!-- Custom Chart Prompt Section -->
+                <div class="custom-prompt-section" id="customPromptSection" style="display: none;" data-aos="fade-right"
+                    data-aos-delay="200">
+                    <h3><i class="fas fa-magic"></i> Custom Chart Request</h3>
+                    <div class="prompt-content">
+                        <textarea id="customPrompt" placeholder="Describe the chart you want to create... 
+Example: 'Create a bar chart showing sales by region' or 'Make a line chart of revenue trends over time'"
+                            rows="4"></textarea>
+                        <button class="btn-primary" id="createCustomChartBtn" disabled>
+                            <i class="fas fa-chart-bar"></i> Create Custom Chart
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Filters -->
+                <div class="filters-section" id="filtersSection" style="display: none;" data-aos="fade-right"
+                    data-aos-delay="300">
+                    <h3><i class="fas fa-filter"></i> Filters</h3>
+                    <div class="filters-content" id="filtersContent"></div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Dashboard -->
+        <section class="dashboard" id="dashboard">
+            <div class="dashboard-header">
+                <button class="sidebar-toggle" id="sidebarToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h2>Dashboard</h2>
+                <div class="dashboard-actions">
+                    <button class="btn-secondary" id="exportBtn" disabled>
+                        <i class="fas fa-download"></i> Export
+                    </button>
+                </div>
+            </div>
+
+            <!-- Welcome State -->
+            <div class="welcome-state" id="welcomeState" data-aos="fade-up">
+                <div class="welcome-content">
+                    <i class="fas fa-chart-pie"></i>
+                    <h3>Welcome to Data Dashboard AI</h3>
+                    <p>Upload your Excel or CSV file to get started with AI-powered data analysis and visualization.</p>
+                    <div class="features">
+                        <div class="feature">
+                            <i class="fas fa-upload"></i>
+                            <span>Upload Excel/CSV</span>
+                        </div>
+                        <div class="feature">
+                            <i class="fas fa-chart-bar"></i>
+                            <span>Interactive Charts</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Grid -->
+            <div class="charts-grid" id="chartsGrid" style="display: none;"></div>
+
+            <!-- Loading State -->
+            <div class="loading-state" id="loadingState" style="display: none;">
+                <div class="loading-spinner"></div>
+                <p>Analyzing your data with AI...</p>
+            </div>
+        </section>
+    </main>
+
+    <!-- Settings Modal -->
+    <div class="modal" id="settingsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Settings</h3>
+                <button class="modal-close" id="closeSettings">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="setting-group">
+                    <label for="geminiApiKey">Gemini API Key</label>
+                    <input type="password" id="geminiApiKey" placeholder="Enter your Gemini API key">
+                    <small>Your API key is stored locally and never sent to our servers.</small>
+                </div>
+                <div class="setting-group">
+                    <label for="maxRows">Max Rows to Analyze</label>
+                    <input type="number" id="maxRows" value="1000" min="100" max="10000">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="closeSettings2">Cancel</button>
+                <button class="btn-primary" id="saveSettings">Save Settings</button>
+            </div>
+        </div>
     </div>
+
+    <!-- Full Screen Chart Modal -->
+    <div class="modal" id="fullScreenChartModal">
+        <div class="modal-content full-screen-modal-content">
+            <div class="modal-header">
+                <h3 id="fullScreenChartTitle"></h3>
+                <button class="modal-close" id="closeFullScreenChart">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body full-screen-modal-body">
+                <canvas id="fullScreenChartCanvas"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script>
+        /**
+     * AI Data Dashboard - Main JavaScript File
+     * Handles file upload, parsing, AI integration, and chart rendering
+     */
+
+            // Global variables for libraries loaded via CDN
+            const AOS = window.AOS;
+            // const XLSX = window.XLSX;
+            const Chart = window.Chart;
+
+            class DataDashboard {
+                constructor() {
+                    this.data = null;
+                    this.headers = [];
+                    this.selectedColumns = [];
+                    this.charts = [];
+                    this.geminiApiKey = localStorage.getItem("geminiApiKey") || "";
+                    this.maxRows = Number.parseInt(localStorage.getItem("maxRows")) || 1000;
+
+                    this.init();
+                }
+
+                init() {
+                    this.setupEventListeners();
+                    this.initializeAOS();
+                    this.loadSettings();
+                }
+
+                setupEventListeners() {
+                    // File upload
+                    const fileInput = document.getElementById("fileInput");
+                    const uploadArea = document.getElementById("uploadArea");
+                    const removeFile = document.getElementById("removeFile");
+
+                    fileInput.addEventListener("change", (e) => this.handleFileSelect(e));
+                    uploadArea.addEventListener("click", () => fileInput.click());
+                    uploadArea.addEventListener("dragover", (e) => this.handleDragOver(e));
+                    uploadArea.addEventListener("drop", (e) => this.handleFileDrop(e));
+                    removeFile.addEventListener("click", () => this.removeFile());
+
+                    // Custom prompt functionality
+                    const customPrompt = document.getElementById("customPrompt");
+                    const createCustomChartBtn = document.getElementById(
+                        "createCustomChartBtn"
+                    );
+
+                    customPrompt.addEventListener("input", () => {
+                        createCustomChartBtn.disabled = customPrompt.value.trim().length === 0;
+                    });
+
+                    createCustomChartBtn.addEventListener("click", () =>
+                        this.createCustomChart()
+                    );
+
+                    // Settings
+                    document
+                        .getElementById("settingsBtn")
+                        .addEventListener("click", () => this.openSettings());
+                    document
+                        .getElementById("closeSettings")
+                        .addEventListener("click", () => this.closeSettings());
+                    document
+                        .getElementById("closeSettings2")
+                        .addEventListener("click", () => this.closeSettings());
+                    document
+                        .getElementById("saveSettings")
+                        .addEventListener("click", () => this.saveSettings());
+
+                    // Sidebar toggle
+                    document
+                        .getElementById("sidebarToggle")
+                        .addEventListener("click", () => this.toggleSidebar());
+
+                    // Export
+                    document
+                        .getElementById("exportBtn")
+                        .addEventListener("click", () => this.exportDashboard());
+
+                    // Modal backdrop
+                    document.getElementById("settingsModal").addEventListener("click", (e) => {
+                        if (e.target.id === "settingsModal") this.closeSettings();
+                    });
+
+                    // Full screen chart modal
+                    document
+                        .getElementById("closeFullScreenChart")
+                        .addEventListener("click", () => this.closeFullScreenChart());
+                    document
+                        .getElementById("fullScreenChartModal")
+                        .addEventListener("click", (e) => {
+                            if (e.target.id === "fullScreenChartModal") this.closeFullScreenChart();
+                        });
+                }
+
+                initializeAOS() {
+                    if (AOS) {
+                        AOS.init({
+                            duration: 600,
+                            easing: "ease-out-cubic",
+                            once: true,
+                        });
+                    }
+                }
+
+                loadSettings() {
+                    document.getElementById("geminiApiKey").value = this.geminiApiKey;
+                    document.getElementById("maxRows").value = this.maxRows;
+                }
+
+                // File Handling
+                handleFileSelect(event) {
+                    const file = event.target.files[0];
+                    if (file) this.processFile(file);
+                }
+
+                handleDragOver(event) {
+                    event.preventDefault();
+                    event.currentTarget.classList.add("dragover");
+                }
+
+                handleFileDrop(event) {
+                    event.preventDefault();
+                    event.currentTarget.classList.remove("dragover");
+
+                    const file = event.dataTransfer.files[0];
+                    if (file) this.processFile(file);
+                }
+
+                processFile(file) {
+                    // Validate file type
+                    const validTypes = [
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        "application/vnd.ms-excel",
+                        "text/csv",
+                    ];
+
+                    if (
+                        !validTypes.includes(file.type) &&
+                        !file.name.match(/\.(xlsx|xls|csv)$/i)
+                    ) {
+                        this.showToast(
+                            "error",
+                            "Invalid File",
+                            "Please upload an Excel (.xlsx, .xls) or CSV file."
+                        );
+                        return;
+                    }
+
+                    // Show file info
+                    document.getElementById("fileName").textContent = file.name;
+                    document.getElementById("fileInfo").style.display = "block";
+                    document.getElementById("uploadArea").style.display = "none";
+
+                    // Parse file
+                    this.parseFile(file);
+                }
+
+                parseFile(file) {
+                    const reader = new FileReader();
+
+                    reader.onload = (e) => {
+                        try {
+                            let workbook;
+
+                            if (file.name.toLowerCase().endsWith(".csv")) {
+                                // Parse CSV
+                                const csvData = e.target.result;
+                                workbook = XLSX.read(csvData, { type: "string" });
+                            } else {
+                                // Parse Excel
+                                const data = new Uint8Array(e.target.result);
+                                workbook = XLSX.read(data, { type: "array" });
+                            }
+
+                            // Get first worksheet
+                            const firstSheetName = workbook.SheetNames[0];
+                            const worksheet = workbook.Sheets[firstSheetName];
+
+                            // Convert to JSON
+                            const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+                            if (jsonData.length === 0) {
+                                throw new Error("File appears to be empty");
+                            }
+
+                            // Extract headers and data
+                            this.headers = jsonData[0] || [];
+                            this.data = jsonData.slice(1).slice(0, this.maxRows); // Limit rows
+
+                            this.displayColumnSelection();
+                            this.showToast(
+                                "success",
+                                "File Loaded",
+                                `Successfully loaded ${this.data.length} rows with ${this.headers.length} columns.`
+                            );
+                        } catch (error) {
+                            console.error("Error parsing file:", error);
+                            this.showToast(
+                                "error",
+                                "Parse Error",
+                                "Failed to parse the file. Please check the format."
+                            );
+                        }
+                    };
+
+                    if (file.name.toLowerCase().endsWith(".csv")) {
+                        reader.readAsText(file);
+                    } else {
+                        reader.readAsArrayBuffer(file);
+                    }
+                }
+
+                displayColumnSelection() {
+                    const columnList = document.getElementById("columnList");
+                    columnList.innerHTML = "";
+
+                    this.headers.forEach((header, index) => {
+                        const columnItem = document.createElement("div");
+                        columnItem.className = "column-item";
+
+                        // Detect column type
+                        const sampleValues = this.data
+                            .slice(0, 10)
+                            .map((row) => row[index])
+                            .filter((val) => val != null);
+                        const columnType = this.detectColumnType(sampleValues);
+
+                        columnItem.innerHTML = `
+                <input type="checkbox" id="col_${index}" value="${index}">
+                <label for="col_${index}">${header || `Column ${index + 1}`
+                            }</label>
+                <span class="column-type">${columnType}</span>
+            `;
+
+                        // columnItem
+                        //   .querySelector("input")
+                        //   .addEventListener("change", () => this.updateSelectedColumns());
+                        columnList.appendChild(columnItem);
+                    });
+
+                    document.getElementById("columnSection").style.display = "block";
+                    document.getElementById("customPromptSection").style.display = "block";
+                }
+
+                detectColumnType(values) {
+                    if (values.length === 0) return "empty";
+
+                    const numericCount = values.filter(
+                        (val) => !isNaN(val) && val !== ""
+                    ).length;
+                    const dateCount = values.filter((val) => !isNaN(Date.parse(val))).length;
+
+                    if (numericCount / values.length > 0.8) return "numeric";
+                    if (dateCount / values.length > 0.8) return "date";
+                    return "text";
+                }
+
+                updateSelectedColumns() {
+                    const checkboxes = document.querySelectorAll(
+                        '#columnList input[type="checkbox"]:checked'
+                    );
+                    this.selectedColumns = Array.from(checkboxes).map((cb) =>
+                        Number.parseInt(cb.value)
+                    );
+
+                    const analyzeBtn = document.getElementById("analyzeBtn");
+                    analyzeBtn.disabled = this.selectedColumns.length === 0;
+                }
+
+                removeFile() {
+                    document.getElementById("fileInfo").style.display = "none";
+                    document.getElementById("uploadArea").style.display = "block";
+                    document.getElementById("columnSection").style.display = "none";
+                    document.getElementById("suggestionsSection").style.display = "none";
+                    document.getElementById("customPromptSection").style.display = "none";
+                    document.getElementById("chartsGrid").style.display = "none";
+                    document.getElementById("welcomeState").style.display = "block";
+
+                    this.data = null;
+                    this.headers = [];
+                    this.selectedColumns = [];
+                    this.clearCharts();
+                }
+
+                buildCustomChartPrompt(userPrompt) {
+                    const availableColumns = this.headers.map((header, index) => ({
+                        name: header,
+                        type: this.detectColumnType(
+                            this.data
+                                .slice(0, 10)
+                                .map((row) => row[index])
+                                .filter((val) => val != null)
+                        ),
+                        index: index,
+                    }));
+
+                    const sampleData = this.data.slice(0, 5).map((row) =>
+                        this.headers.reduce((obj, header, index) => {
+                            obj[header] = row[index];
+                            return obj;
+                        }, {})
+                    );
+
+                    return `
+Create executable chart code based on this user request: "${userPrompt}"
+
+Available dataset:
+- Columns: ${availableColumns
+                            .map((col) => `${col.name} (${col.type})`)
+                            .join(", ")}
+- Sample Data: ${JSON.stringify(sampleData, null, 2)}
+- Total Rows: ${this.data.length}
+
+IMPORTANT: Use the findColumnIndex helper function for column matching instead of headers.indexOf()
+
+Generate a response in this JSON format:
+{
+    "chart": {
+        "type": "bar|line|pie|scatter|area|doughnut",
+        "title": "Chart Title",
+        "description": "Brief description",
+        "code": "// Executable JavaScript code",
+        "dataMapping": {
+            "xColumn": "exact_column_name",
+            "yColumn": "exact_column_name_or_Count",
+            "groupBy": "optional_column_for_grouping"
+        }
+    }
+}
+
+The "code" field must contain executable JavaScript that:
+1. Uses findColumnIndex(columnName) helper function for column matching
+2. Uses the provided 'data' array (rows) and 'headers' array
+3. Returns a complete Chart.js configuration object
+4. Handles data filtering, transformation, and aggregation
+5. Includes proper error handling for missing/invalid data
+6. Logs data processing steps for debugging
+
+Example code structure:
+"code": "
+const xColIndex = findColumnIndex('${availableColumns[0]?.name}');
+const yColIndex = findColumnIndex('${availableColumns[1]?.name}');
+
+console.log('[v0] AI Code - Column indices:', { x: xColIndex, y: yColIndex });
+
+if (xColIndex === -1) {
+    console.error('[v0] AI Code - X column not found');
+    throw new Error('X column not found: ${availableColumns[0]?.name}');
+}
+
+const processedData = data
+    .filter((row, index) => {
+        const hasData = row[xColIndex] != null;
+        if (!hasData) console.log('[v0] AI Code - Filtering out row', index, 'missing x data');
+        return hasData;
+    })
+    .map((row, index) => {
+        const xVal = row[xColIndex];
+        const yVal = yColIndex !== -1 ? (parseFloat(row[yColIndex]) || 0) : 1;
+        if (index < 3) console.log('[v0] AI Code - Processing row', index, ':', { x: xVal, y: yVal });
+        return { x: xVal, y: yVal };
+    })
+    .slice(0, 100); // Limit for performance
+
+console.log('[v0] AI Code - Processed data count:', processedData.length);
+
+return {
+    type: 'bar',
+    data: {
+        labels: processedData.map(item => item.x),
+        datasets: [{
+            label: 'Values',
+            data: processedData.map(item => item.y),
+            backgroundColor: '#3B82F6',
+            borderColor: '#1D4ED8',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            title: { display: true, text: 'Custom Chart' }
+        },
+        scales: {
+            x: { title: { display: true, text: headers[xColIndex] }},
+            y: { title: { display: true, text: yColIndex !== -1 ? headers[yColIndex] : 'Count' }}
+        }
+    }
+};
+"
+
+Respond ONLY with the JSON, no additional text.
+        `.trim();
+                }
+
+                async callGeminiAPI(prompt) {
+                    // Note: This is a mock implementation for demo purposes
+                    // In production, you would call the actual Gemini API
+                    try {
+                        const response = await fetch(
+                            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=" +
+                            this.geminiApiKey,
+                            {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                },
+                                body: JSON.stringify({
+                                    contents: [
+                                        {
+                                            parts: [
+                                                {
+                                                    text: prompt,
+                                                },
+                                            ],
+                                        },
+                                    ],
+                                }),
+                            }
+                        );
+
+                        if (!response.ok) {
+                            throw new Error(`API Error: ${response.status}`);
+                        }
+
+                        const data = await response.json();
+                        const text = data.candidates[0].content.parts[0].text;
+
+                        // Extract JSON from response
+                        const jsonMatch = text.match(/\{[\s\S]*\}/);
+                        if (jsonMatch) {
+                            return JSON.parse(jsonMatch[0]);
+                        }
+
+                        throw new Error("No valid JSON found in response");
+                    } catch (error) {
+                        console.warn("Gemini API call failed, using mock suggestions:", error);
+                    }
+                }
+
+                createAIChart(index, chartConfig) {
+                    console.log("[v0] Creating AI chart with config:", chartConfig);
+
+                    const chartsGrid = document.getElementById("chartsGrid");
+                    chartsGrid.style.display = "grid";
+
+                    const chartCard = document.createElement("div");
+                    chartCard.className = "chart-card fade-in";
+                    chartCard.innerHTML = `
+            <div class="chart-header">
+                <h3 class="chart-title">${chartConfig.title}</h3>
+                <div class="chart-actions">
+                    <button class="btn-icon" onclick="dashboard.downloadChartSVG(this)" title="Download SVG">
+                        <i class="fas fa-download"></i>
+                    </button>
+                    <button class="btn-icon" onclick="dashboard.openFullScreenChart(this)" title="Full Screen">
+                        <i class="fas fa-expand"></i>
+                    </button>
+                    <button class="btn-icon" onclick="dashboard.removeChart(this)" title="Remove Chart">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="chart_${Date.now()}_${index}"></canvas>
+            </div>
+        `;
+
+                    chartsGrid.appendChild(chartCard);
+
+                    // Execute AI-generated chart code
+                    const canvas = chartCard.querySelector("canvas");
+                    this.executeChartCode(canvas, chartConfig);
+
+                    document.getElementById("exportBtn").disabled = false;
+                }
+
+                executeChartCode(canvas, config) {
+                    const ctx = canvas.getContext("2d");
+
+                    try {
+                        console.log("[v0] Executing chart code for:", config.title);
+
+                        const existingChart = Chart.getChart(canvas);
+                        if (existingChart) {
+                            console.log("[v0] Destroying existing chart on canvas");
+                            existingChart.destroy();
+                        }
+
+                        console.log("[v0] Data sanity check:");
+                        console.log("[v0] Headers:", this.headers);
+                        console.log("[v0] Data rows:", this.data.length);
+                        console.log("[v0] First 3 data rows:", this.data.slice(0, 3));
+
+                        if (!this.data || this.data.length === 0) {
+                            throw new Error("No data available for chart creation");
+                        }
+
+                        if (!this.headers || this.headers.length === 0) {
+                            throw new Error("No headers available for chart creation");
+                        }
+
+                        // Create a safe execution environment with enhanced data access
+                        const chartFunction = new Function(
+                            "data",
+                            "headers",
+                            "Chart",
+                            `
+        console.log("[v0] AI Code - Data rows:", data.length);
+        console.log("[v0] AI Code - Headers:", headers);
+        console.log("[v0] AI Code - Sample data:", data.slice(0, 2));
+        
+        // Helper function for column matching
+        const findColumnIndex = (columnName) => {
+          if (!columnName || columnName === "Count") return -1;
+          
+          // Exact match first
+          let index = headers.indexOf(columnName);
+          if (index !== -1) {
+            console.log("[v0] AI Code - Exact match for", columnName, "at index", index);
+            return index;
+          }
+          
+          // Case insensitive match
+          index = headers.findIndex(header => 
+            header.toLowerCase() === columnName.toLowerCase()
+          );
+          if (index !== -1) {
+            console.log("[v0] AI Code - Case insensitive match for", columnName, "at index", index);
+            return index;
+          }
+          
+          // Partial match
+          index = headers.findIndex(header =>
+            header.toLowerCase().includes(columnName.toLowerCase()) ||
+            columnName.toLowerCase().includes(header.toLowerCase())
+          );
+          
+          console.log("[v0] AI Code - Column matching result for", columnName, ":", index);
+          return index;
+        };
+        
+        // Make helper available to AI code
+        window.findColumnIndex = findColumnIndex;
+        
+        ${config.code}
+      `
+                        );
+
+                        // Execute the AI-generated code with our data
+                        const chartConfig = chartFunction(this.data, this.headers, Chart);
+
+                        console.log("[v0] Generated chart config:", chartConfig);
+
+                        if (!chartConfig || !chartConfig.type) {
+                            throw new Error("Invalid chart configuration returned from AI code");
+                        }
+
+                        if (
+                            !chartConfig.data ||
+                            (!chartConfig.data.labels && !chartConfig.data.datasets)
+                        ) {
+                            throw new Error("Chart configuration missing required data structure");
+                        }
+
+                        if (chartConfig.data.labels) {
+                            console.log("[v0] Chart labels count:", chartConfig.data.labels.length);
+                            console.log(
+                                "[v0] First 5 labels:",
+                                chartConfig.data.labels.slice(0, 5)
+                            );
+                        }
+
+                        if (chartConfig.data.datasets) {
+                            chartConfig.data.datasets.forEach((dataset, i) => {
+                                console.log(
+                                    `[v0] Dataset ${i} data points:`,
+                                    dataset.data?.length || 0
+                                );
+                                console.log(
+                                    `[v0] Dataset ${i} first 5 points:`,
+                                    dataset.data?.slice(0, 5) || []
+                                );
+                            });
+                        }
+
+                        // Create the chart with AI-generated configuration
+                        const chart = new Chart(ctx, {
+                            ...chartConfig,
+                            options: {
+                                ...chartConfig.options,
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    ...chartConfig.options?.plugins,
+                                    legend: {
+                                        position: "top",
+                                        ...chartConfig.options?.plugins?.legend,
+                                    },
+                                    tooltip: {
+                                        mode: "index",
+                                        intersect: false,
+                                        ...chartConfig.options?.plugins?.tooltip,
+                                    },
+                                },
+                            },
+                        });
+
+                        this.charts.push(chart);
+
+                        this.showToast(
+                            "success",
+                            "Chart Created",
+                            `${config.title} has been created successfully!`
+                        );
+                    } catch (error) {
+                        console.error("[v0] Error executing chart code:", error);
+                        console.error("[v0] Error stack:", error.stack);
+
+                        console.log("[v0] Falling back to basic chart creation");
+                        console.log("[v0] Config for fallback:", config);
+
+                        try {
+                            this.renderChart(canvas, config);
+                            this.showToast(
+                                "warning",
+                                "Chart Created with Fallback",
+                                "Chart created using basic configuration due to code execution error."
+                            );
+                        } catch (fallbackError) {
+                            console.error(
+                                "[v0] Fallback chart creation also failed:",
+                                fallbackError
+                            );
+                            this.showToast(
+                                "error",
+                                "Chart Creation Failed",
+                                "Unable to create chart. Please check your data and try again."
+                            );
+                        }
+                    }
+                }
+
+                async createCustomChart() {
+                    const promptInput = document.getElementById("customPrompt");
+                    const userPrompt = promptInput.value.trim();
+
+                    if (!userPrompt) {
+                        this.showToast(
+                            "warning",
+                            "Input Required",
+                            "Please enter a description for your custom chart."
+                        );
+                        return;
+                    }
+
+                    if (!this.data || this.data.length === 0) {
+                        this.showToast(
+                            "error",
+                            "No Data",
+                            "Please upload and analyze data first."
+                        );
+                        return;
+                    }
+
+                    try {
+                        this.showLoading(true, "Creating custom chart...");
+
+                        console.log("[v0] Creating custom chart with prompt:", userPrompt);
+                        console.log("[v0] Available data:", {
+                            headers: this.headers,
+                            rowCount: this.data.length,
+                            sampleRow: this.data[0],
+                        });
+
+                        const prompt = this.buildCustomChartPrompt(userPrompt);
+                        const response = await this.callGeminiAPI(prompt);
+
+                        console.log("[v0] Custom chart AI response:", response);
+
+                        if (response && response.chart) {
+                            const chartConfig = response.chart;
+
+                            if (!chartConfig.code) {
+                                throw new Error("AI response missing executable code");
+                            }
+
+                            console.log("[v0] Custom chart config:", chartConfig);
+
+                            this.createAIChart(Date.now(), chartConfig);
+                            promptInput.value = "";
+                        } else {
+                            throw new Error("Invalid response format from AI");
+                        }
+                    } catch (error) {
+                        console.error("[v0] Custom Chart Error:", error);
+                        this.showToast(
+                            "error",
+                            "Chart Creation Failed",
+                            "Failed to create custom chart. Please try again."
+                        );
+                    } finally {
+                        this.showLoading(false);
+                    }
+                }
+
+                prepareChartData(config) {
+                    console.log("[v0] Preparing chart data for config:", config);
+
+                    // Improved column matching - case insensitive and flexible
+                    const findColumnIndex = (columnName) => {
+                        if (!columnName || columnName === "Count") return -1;
+
+                        // Exact match first
+                        let index = this.headers.indexOf(columnName);
+                        if (index !== -1) return index;
+
+                        // Case insensitive match
+                        index = this.headers.findIndex(
+                            (header) => header.toLowerCase() === columnName.toLowerCase()
+                        );
+                        if (index !== -1) return index;
+
+                        // Partial match
+                        index = this.headers.findIndex(
+                            (header) =>
+                                header.toLowerCase().includes(columnName.toLowerCase()) ||
+                                columnName.toLowerCase().includes(header.toLowerCase())
+                        );
+
+                        console.log("[v0] Column matching result for", columnName, ":", index);
+                        return index;
+                    };
+
+                    const xAxisIndex = findColumnIndex(config.xAxis);
+                    const yAxisIndex = findColumnIndex(config.yAxis);
+
+                    console.log("[v0] Column indices - X:", xAxisIndex, "Y:", yAxisIndex);
+
+                    if (config.type === "pie" || config.type === "doughnut") {
+                        // For pie charts, count occurrences
+                        const counts = {};
+                        this.data.forEach((row) => {
+                            const value = row[xAxisIndex];
+                            if (value != null && value !== "") {
+                                const key = String(value).trim();
+                                counts[key] = (counts[key] || 0) + 1;
+                            }
+                        });
+
+                        console.log("[v0] Pie chart data counts:", counts);
+
+                        return {
+                            labels: Object.keys(counts),
+                            datasets: [
+                                {
+                                    data: Object.values(counts),
+                                    backgroundColor: [
+                                        "#FF6384",
+                                        "#36A2EB",
+                                        "#FFCE56",
+                                        "#4BC0C0",
+                                        "#9966FF",
+                                        "#FF9F40",
+                                        "#FF6384",
+                                        "#C9CBCF",
+                                        "#4BC0C0",
+                                        "#36A2EB",
+                                    ],
+                                    borderWidth: 2,
+                                    borderColor: "#ffffff",
+                                },
+                            ],
+                        };
+                    } else {
+                        // For other chart types
+                        let labels, data;
+
+                        if (yAxisIndex === -1 || config.yAxis === "Count") {
+                            // Count occurrences for x-axis
+                            const counts = {};
+                            this.data.forEach((row) => {
+                                const value = row[xAxisIndex];
+                                if (value != null && value !== "") {
+                                    const key = String(value).trim();
+                                    counts[key] = (counts[key] || 0) + 1;
+                                }
+                            });
+                            labels = Object.keys(counts).slice(0, 20); // Limit for readability
+                            data = Object.values(counts).slice(0, 20);
+                        } else {
+                            // Use actual x,y data
+                            const validData = this.data
+                                .filter((row) => row[xAxisIndex] != null && row[yAxisIndex] != null)
+                                .slice(0, 100); // Limit for performance
+
+                            labels = validData.map((row) => String(row[xAxisIndex]).trim());
+                            data = validData.map((row) => {
+                                const value = Number.parseFloat(row[yAxisIndex]);
+                                return isNaN(value) ? 0 : value;
+                            });
+                        }
+
+                        console.log(
+                            "[v0] Chart data prepared - Labels:",
+                            labels.length,
+                            "Data points:",
+                            data.length
+                        );
+
+                        return {
+                            labels: labels,
+                            datasets: [
+                                {
+                                    label: config.yAxis || "Values",
+                                    data: data,
+                                    borderColor: "#2563eb",
+                                    backgroundColor:
+                                        config.type === "line" ? "rgba(37, 99, 235, 0.1)" : "#2563eb",
+                                    fill: config.type === "area",
+                                    tension: config.type === "line" ? 0.4 : 0,
+                                    pointRadius: config.type === "scatter" ? 4 : 2,
+                                    pointHoverRadius: 6,
+                                },
+                            ],
+                        };
+                    }
+                }
+
+                renderChart(canvas, config) {
+                    const ctx = canvas.getContext("2d");
+
+                    // Prepare data based on chart type and configuration
+                    const chartData = this.prepareChartData(config);
+
+                    const chart = new Chart(ctx, {
+                        type: config.type,
+                        data: chartData,
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: "top",
+                                },
+                                tooltip: {
+                                    mode: "index",
+                                    intersect: false,
+                                },
+                            },
+                            scales:
+                                config.type !== "pie"
+                                    ? {
+                                        x: {
+                                            display: true,
+                                            title: {
+                                                display: true,
+                                                text: config.xAxis,
+                                            },
+                                        },
+                                        y: {
+                                            display: true,
+                                            title: {
+                                                display: true,
+                                                text: config.yAxis,
+                                            },
+                                        },
+                                    }
+                                    : {},
+                        },
+                    });
+
+                    this.charts.push(chart);
+                }
+
+                downloadChartSVG(button) {
+                    const chartCard = button.closest(".chart-card");
+                    const canvas = chartCard.querySelector("canvas");
+                    const chartTitle = chartCard.querySelector(".chart-title").textContent;
+
+                    if (!canvas) {
+                        this.showToast("error", "Download Failed", "Could not find chart canvas.");
+                        return;
+                    }
+
+                    try {
+                        // Get the chart instance associated with the canvas
+                        const chartInstance = Chart.getChart(canvas);
+                        if (!chartInstance) {
+                            this.showToast("error", "Download Failed", "Chart instance not found.");
+                            return;
+                        }
+
+                        // Get the SVG string from the Chart.js canvas
+                        // Chart.js does not directly provide SVG, so we'll convert the canvas to a data URL
+                        // and then create an SVG wrapper. This is a common workaround for Chart.js.
+                        const imgData = chartInstance.toBase64Image();
+
+                        // Create a simple SVG structure to embed the image
+                        const svgContent = `
+                            <svg width="${canvas.width}" height="${canvas.height}" xmlns="http://www.w3.org/2000/svg">
+                            <rect width="100%" height="100%" fill="white"/>
+                            <image href="${imgData}" x="0" y="0" width="${canvas.width}" height="${canvas.height}"/>
+                            </svg>
+                        `;
+
+                        const blob = new Blob([svgContent], { type: "image/svg+xml" });
+                        const url = URL.createObjectURL(blob);
+
+                        const a = document.createElement("a");
+                        a.href = url;
+                        a.download = `${chartTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_chart.svg`;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+
+                        this.showToast("success", "Download Complete", "Chart downloaded as SVG.");
+                    } catch (error) {
+                        console.error("Error downloading chart as SVG:", error);
+                        this.showToast("error", "Download Failed", "Failed to download chart as SVG.");
+                    }
+                }
+
+                openFullScreenChart(button) {
+                    const chartCard = button.closest(".chart-card");
+                    const canvas = chartCard.querySelector("canvas");
+                    const chartTitle = chartCard.querySelector(".chart-title").textContent;
+
+                    if (!canvas) {
+                        this.showToast("error", "Full Screen Failed", "Could not find chart canvas.");
+                        return;
+                    }
+
+                    const fullScreenModal = document.getElementById("fullScreenChartModal");
+                    const fullScreenCanvas = document.getElementById("fullScreenChartCanvas");
+                    const fullScreenTitle = document.getElementById("fullScreenChartTitle");
+
+                    fullScreenTitle.textContent = chartTitle;
+                    fullScreenModal.classList.add("active");
+
+                    console.log("[v0] Full Screen: Opening modal for chart:", chartTitle);
+                    console.log("[v0] Full Screen: Original canvas:", canvas);
+                    console.log("[v0] Full Screen: Full screen canvas:", fullScreenCanvas);
+
+                    // Destroy any existing chart on the full-screen canvas
+                    const existingFullScreenChart = Chart.getChart(fullScreenCanvas);
+                    if (existingFullScreenChart) {
+                        console.log("[v0] Full Screen: Destroying existing full screen chart.");
+                        existingFullScreenChart.destroy();
+                    }
+
+                    // Get the chart instance from the original canvas
+                    const originalChartInstance = Chart.getChart(canvas);
+                    if (!originalChartInstance) {
+                        this.showToast("error", "Full Screen Failed", "Original chart instance not found.");
+                        console.error("[v0] Full Screen: Original chart instance not found for canvas:", canvas);
+                        return;
+                    }
+
+                    console.log("[v0] Full Screen: Original chart instance found:", originalChartInstance);
+                    console.log("[v0] Full Screen: Original chart config:", originalChartInstance.config);
+
+                    // Re-execute the original chart code on the full-screen canvas
+                    // We need to pass the original config that contains the 'code' property
+                    this.executeChartCode(fullScreenCanvas, originalChartInstance.config._config);
+
+                    // Adjust options for full screen after chart creation
+                    const fullScreenChartInstance = Chart.getChart(fullScreenCanvas);
+                    if (fullScreenChartInstance) {
+                        fullScreenChartInstance.options.responsive = true;
+                        fullScreenChartInstance.options.maintainAspectRatio = false;
+                        fullScreenChartInstance.options.aspectRatio = 1; // Square aspect ratio for full screen
+                        fullScreenChartInstance.update();
+                    }
+                }
+
+                closeFullScreenChart() {
+                    const fullScreenModal = document.getElementById("fullScreenChartModal");
+                    const fullScreenCanvas = document.getElementById("fullScreenChartCanvas");
+
+                    // Destroy the chart instance on the full-screen canvas before closing
+                    const existingFullScreenChart = Chart.getChart(fullScreenCanvas);
+                    if (existingFullScreenChart) {
+                        existingFullScreenChart.destroy();
+                    }
+
+                    fullScreenModal.classList.remove("active");
+                }
+
+                removeChart(button) {
+                    const chartCard = button.closest(".chart-card");
+                    const canvas = chartCard.querySelector("canvas");
+
+                    // Find and destroy the chart instance
+                    const chartIndex = this.charts.findIndex(
+                        (chart) => chart.canvas === canvas
+                    );
+                    if (chartIndex !== -1) {
+                        this.charts[chartIndex].destroy();
+                        this.charts.splice(chartIndex, 1);
+                    }
+
+                    chartCard.remove();
+
+                    // Hide charts grid if no charts remain
+                    if (this.charts.length === 0) {
+                        document.getElementById("chartsGrid").style.display = "none";
+                        document.getElementById("welcomeState").style.display = "block";
+                        document.getElementById("exportBtn").disabled = true;
+                    }
+                }
+
+                clearCharts() {
+                    this.charts.forEach((chart) => chart.destroy());
+                    this.charts = [];
+                    document.getElementById("chartsGrid").innerHTML = "";
+                }
+
+                // UI Helpers
+                showLoading(show, message = "Loading...") {
+                    const loadingState = document.getElementById("loadingState");
+                    loadingState.style.display = show ? "flex" : "none";
+                    loadingState.textContent = message;
+                    document.getElementById("welcomeState").style.display = show
+                        ? "none"
+                        : "block";
+                }
+
+                showToast(type, title, message) {
+                    const toastContainer = document.getElementById("toastContainer");
+                    const toast = document.createElement("div");
+                    toast.className = `toast ${type}`;
+
+                    const iconMap = {
+                        success: "fas fa-check-circle",
+                        error: "fas fa-exclamation-circle",
+                        warning: "fas fa-exclamation-triangle",
+                    };
+
+                    toast.innerHTML = `
+                        <i class="toast-icon ${iconMap[type]}"></i>
+                        <div class="toast-content">
+                            <div class="toast-title">${title}</div>
+                            <div class="toast-message">${message}</div>
+                        </div>
+                    `;
+
+                    toastContainer.appendChild(toast);
+
+                    // Auto remove after 5 seconds
+                    setTimeout(() => {
+                        toast.remove();
+                    }, 5000);
+                }
+
+                toggleSidebar() {
+                    document.getElementById("sidebar").classList.toggle("active");
+                }
+
+                // Settings
+                openSettings() {
+                    document.getElementById("settingsModal").classList.add("active");
+                }
+
+                closeSettings() {
+                    document.getElementById("settingsModal").classList.remove("active");
+                }
+
+                saveSettings() {
+                    this.geminiApiKey = document.getElementById("geminiApiKey").value;
+                    this.maxRows = Number.parseInt(document.getElementById("maxRows").value);
+
+                    localStorage.setItem("geminiApiKey", this.geminiApiKey);
+                    localStorage.setItem("maxRows", this.maxRows.toString());
+
+                    this.showToast(
+                        "success",
+                        "Settings Saved",
+                        "Your settings have been saved successfully."
+                    );
+                    this.closeSettings();
+                }
+
+                // Export
+                exportDashboard() {
+                    // Create export data
+                    const exportData = {
+                        timestamp: new Date().toISOString(),
+                        filename: document.getElementById("fileName").textContent,
+                        selectedColumns: this.selectedColumns.map((index) => this.headers[index]),
+                        charts: this.charts.length,
+                        dataRows: this.data.length,
+                    };
+
+                    // Download as JSON
+                    const blob = new Blob([JSON.stringify(exportData, null, 2)], {
+                        type: "application/json",
+                    });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = "dashboard-export.json";
+                    a.click();
+                    URL.revokeObjectURL(url);
+
+                    this.showToast(
+                        "success",
+                        "Export Complete",
+                        "Dashboard configuration exported successfully."
+                    );
+                }
+            }
+
+            // Initialize the dashboard when DOM is loaded
+            document.addEventListener("DOMContentLoaded", () => {
+                window.dashboard = new DataDashboard();
+            });
+
+            // Global error handler
+            window.addEventListener("error", (e) => {
+                console.error("Global error:", e.error);
+                if (window.dashboard) {
+                    window.dashboard.showToast(
+                        "error",
+                        "Application Error",
+                        "An unexpected error occurred. Please refresh the page."
+                    );
+                }
+            });
+    </script>
 </body>
 
 </html>
